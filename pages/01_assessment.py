@@ -1,4 +1,7 @@
 import streamlit as st
+import sys
+sys.path.append('/home/ishabbhattarai11/streamlit-project')
+from core.db import save_assessment
 
 st.set_page_config(page_title="Cyber Essentials Assessment", page_icon="🔒", layout="wide", initial_sidebar_state="expanded")
 
@@ -24,6 +27,9 @@ q8 = st.radio("Is your malware protection kept up to date automatically?", ["Yes
 st.header("5. Patch management")
 q9 = st.radio("Do you apply software updates within 14 days of release?", ["Yes", "No", "Not sure"])
 q10 = st.radio("Do you use supported, up-to-date operating systems?", ["Yes", "No", "Not sure"])
+
+company_name = st.text_input("Company name", placeholder="e.g. Acme Ltd")
+company_email = st.text_input("Your email", placeholder="e.g. john@acmeltd.co.uk")
 
 if st.button("Show my results"):
     answers = [q1, q2, q3, q4, q5, q6, q7, q8, q9, q10]
@@ -56,6 +62,20 @@ if st.button("Show my results"):
             st.write(f"✅ {q}")
 
     st.session_state.gaps = [q for q, a in zip(questions, answers) if a != "Yes"]
+
+    if company_email:
+        try:
+            save_assessment(
+                company_name=company_name or "Unknown",
+                email=company_email,
+                framework="Cyber Essentials",
+                answers={q: a for q, a in zip(questions, answers)},
+                result={"score": score, "total": total, "pct": pct}
+            )
+            st.success("Results saved.")
+        except Exception as e:
+            st.warning(f"Could not save results: {e}")
+
     if st.session_state.gaps:
         if st.button("View my remediation plan →"):
             st.switch_page("pages/02_remediation.py")

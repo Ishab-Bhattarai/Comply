@@ -1,7 +1,27 @@
 import streamlit as st
-import sys
-sys.path.append('/home/ishabbhattarai11/streamlit-project')
-from core.db import save_assessment
+import os
+from supabase import create_client
+from dotenv import load_dotenv
+load_dotenv(os.path.expanduser("~/.env"))
+
+supabase = create_client(
+    os.environ.get("SUPABASE_URL", ""),
+    os.environ.get("SUPABASE_KEY", "")
+)
+
+def save_assessment(company_name, email, framework, answers, result):
+    data = {
+        "company_name": company_name,
+        "contact_email": email,
+        "framework": framework,
+        "answers": answers,
+        "result": result,
+        "status": "complete"
+    }
+    try:
+        supabase.table("assessments").insert(data).execute()
+    except Exception as e:
+        st.warning(f"Could not save results:{e}")
 
 st.set_page_config(page_title="Cyber Essentials Assessment", page_icon="🔒", layout="wide", initial_sidebar_state="expanded")
 
